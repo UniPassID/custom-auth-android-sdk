@@ -36,6 +36,18 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+
+    task copyNativeLibs(type: Sync) {
+        from 'src/main/jniLibs'
+        into "$buildDir/intermediates/merged_native_libs/debug/out/lib"
+        include '**/*.so'
+    }
+
+    tasks.whenTaskAdded { task ->
+        if (task.name.startsWith('merge') && task.name.endsWith('JniLibFolders')) {
+            task.dependsOn(copyNativeLibs)
+        }
+    }
 }
 
 dependencies {
@@ -47,14 +59,4 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-}
-
-project.afterEvaluate {
-    publishing {
-        publications {
-            release(MavenPublication) {
-                from components.release
-            }
-        }
-    }
 }
