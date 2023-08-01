@@ -483,6 +483,19 @@ internal interface _UniFFILib : Library {
         `httpRelayerUrl`: RustBuffer.ByValue,
         _uniffi_out_err: RustCallStatus,
     ): Pointer
+    fun uniffi_shared_fn_method_smartaccountbuilder_add_email_guardian_key(
+        `ptr`: Pointer,
+        `emailAddress`: RustBuffer.ByValue,
+        `pepper`: RustBuffer.ByValue,
+        `roleWeight`: RustBuffer.ByValue,
+        _uniffi_out_err: RustCallStatus,
+    ): Pointer
+    fun uniffi_shared_fn_method_smartaccountbuilder_add_open_id_guardian_key(
+        `ptr`: Pointer,
+        `idToken`: RustBuffer.ByValue,
+        `roleWeight`: RustBuffer.ByValue,
+        _uniffi_out_err: RustCallStatus,
+    ): Pointer
     fun uniffi_shared_fn_method_smartaccountbuilder_add_open_id_with_email_guardian_key(
         `ptr`: Pointer,
         `idToken`: RustBuffer.ByValue,
@@ -506,6 +519,11 @@ internal interface _UniFFILib : Library {
     fun uniffi_shared_fn_method_smartaccountbuilder_with_app_id(
         `ptr`: Pointer,
         `appId`: RustBuffer.ByValue,
+        _uniffi_out_err: RustCallStatus,
+    ): Pointer
+    fun uniffi_shared_fn_method_smartaccountbuilder_with_keys(
+        `ptr`: Pointer,
+        `keys`: RustBuffer.ByValue,
         _uniffi_out_err: RustCallStatus,
     ): Pointer
     fun uniffi_shared_fn_method_smartaccountbuilder_with_master_key_signer(
@@ -557,10 +575,13 @@ internal interface _UniFFILib : Library {
     fun uniffi_shared_checksum_method_smartaccount_switch_chain(): Short
     fun uniffi_shared_checksum_method_smartaccount_wait_for_transaction(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_add_chain_option(): Short
+    fun uniffi_shared_checksum_method_smartaccountbuilder_add_email_guardian_key(): Short
+    fun uniffi_shared_checksum_method_smartaccountbuilder_add_open_id_guardian_key(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_add_open_id_with_email_guardian_key(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_build(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_with_active_chain(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_with_app_id(): Short
+    fun uniffi_shared_checksum_method_smartaccountbuilder_with_keys(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_with_master_key_signer(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_with_unipass_server_url(): Short
     fun uniffi_shared_checksum_constructor_smartaccountbuilder_new(): Short
@@ -624,6 +645,12 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
     if (lib.uniffi_shared_checksum_method_smartaccountbuilder_add_chain_option() != 12444.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_shared_checksum_method_smartaccountbuilder_add_email_guardian_key() != 49619.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_shared_checksum_method_smartaccountbuilder_add_open_id_guardian_key() != 44109.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_shared_checksum_method_smartaccountbuilder_add_open_id_with_email_guardian_key() != 57634.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -634,6 +661,9 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_shared_checksum_method_smartaccountbuilder_with_app_id() != 14169.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_shared_checksum_method_smartaccountbuilder_with_keys() != 8540.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_shared_checksum_method_smartaccountbuilder_with_master_key_signer() != 43948.toShort()) {
@@ -1369,11 +1399,17 @@ public interface SmartAccountBuilderInterface {
 
     fun `addChainOption`(`chain`: ULong, `rpcUrl`: String, `httpRelayerUrl`: String?):
         SmartAccountBuilder@Throws(SmartAccountException::class)
+    fun `addEmailGuardianKey`(`emailAddress`: String, `pepper`: String, `roleWeight`: RoleWeight):
+        SmartAccountBuilder@Throws(SmartAccountException::class)
+    fun `addOpenIdGuardianKey`(`idToken`: String, `roleWeight`: RoleWeight):
+        SmartAccountBuilder@Throws(SmartAccountException::class)
     fun `addOpenIdWithEmailGuardianKey`(`idToken`: String, `emailAddress`: String, `pepper`: String, `roleWeight`: RoleWeight):
         SmartAccountBuilder@Throws(SmartAccountException::class)
     suspend fun `build`(): SmartAccount
     fun `withActiveChain`(`activeChain`: ULong): SmartAccountBuilder
-    fun `withAppId`(`appId`: String): SmartAccountBuilder
+    fun `withAppId`(`appId`: String):
+        SmartAccountBuilder@Throws(SmartAccountException::class)
+    fun `withKeys`(`keys`: List<Key>): SmartAccountBuilder
     fun `withMasterKeySigner`(`signer`: Signer, `roleWeight`: RoleWeight?): SmartAccountBuilder
     fun `withUnipassServerUrl`(`unipassServerUrl`: String): SmartAccountBuilder
 }
@@ -1410,6 +1446,41 @@ class SmartAccountBuilder(
                     FfiConverterULong.lower(`chain`),
                     FfiConverterString.lower(`rpcUrl`),
                     FfiConverterOptionalString.lower(`httpRelayerUrl`),
+                    _status,
+                )
+            }
+        }.let {
+            FfiConverterTypeSmartAccountBuilder.lift(it)
+        }
+
+    @Throws(
+        SmartAccountException::class,
+        )
+    override fun `addEmailGuardianKey`(`emailAddress`: String, `pepper`: String, `roleWeight`: RoleWeight): SmartAccountBuilder =
+        callWithPointer {
+            rustCallWithError(SmartAccountException) { _status ->
+                _UniFFILib.INSTANCE.uniffi_shared_fn_method_smartaccountbuilder_add_email_guardian_key(
+                    it,
+                    FfiConverterString.lower(`emailAddress`),
+                    FfiConverterString.lower(`pepper`),
+                    FfiConverterTypeRoleWeight.lower(`roleWeight`),
+                    _status,
+                )
+            }
+        }.let {
+            FfiConverterTypeSmartAccountBuilder.lift(it)
+        }
+
+    @Throws(
+        SmartAccountException::class,
+        )
+    override fun `addOpenIdGuardianKey`(`idToken`: String, `roleWeight`: RoleWeight): SmartAccountBuilder =
+        callWithPointer {
+            rustCallWithError(SmartAccountException) { _status ->
+                _UniFFILib.INSTANCE.uniffi_shared_fn_method_smartaccountbuilder_add_open_id_guardian_key(
+                    it,
+                    FfiConverterString.lower(`idToken`),
+                    FfiConverterTypeRoleWeight.lower(`roleWeight`),
                     _status,
                 )
             }
@@ -1488,6 +1559,22 @@ class SmartAccountBuilder(
                 _UniFFILib.INSTANCE.uniffi_shared_fn_method_smartaccountbuilder_with_app_id(
                     it,
                     FfiConverterString.lower(`appId`),
+                    _status,
+                )
+            }
+        }.let {
+            FfiConverterTypeSmartAccountBuilder.lift(it)
+        }
+
+    @Throws(
+        SmartAccountException::class,
+        )
+    override fun `withKeys`(`keys`: List<Key>): SmartAccountBuilder =
+        callWithPointer {
+            rustCallWithError(SmartAccountException) { _status ->
+                _UniFFILib.INSTANCE.uniffi_shared_fn_method_smartaccountbuilder_with_keys(
+                    it,
+                    FfiConverterSequenceTypeKey.lower(`keys`),
                     _status,
                 )
             }
@@ -1990,6 +2077,125 @@ public object FfiConverterTypeTypedData : FfiConverterRustBuffer<TypedData> {
     }
 }
 
+sealed class Key {
+    data class EoaSigner(
+        val `signer`: Signer,
+        val `roleWeight`: RoleWeight,
+    ) : Key()
+    data class KeyEmail(
+        val `emailAddress`: String,
+        val `pepper`: String,
+        val `roleWeight`: RoleWeight,
+    ) : Key()
+    data class KeyOpenId(
+        val `idToken`: String,
+        val `roleWeight`: RoleWeight,
+    ) : Key()
+    data class KeyOpenIdWithEmail(
+        val `idToken`: String,
+        val `emailAddress`: String,
+        val `pepper`: String,
+        val `roleWeight`: RoleWeight,
+    ) : Key()
+}
+
+public object FfiConverterTypeKey : FfiConverterRustBuffer<Key> {
+    override fun read(buf: ByteBuffer): Key {
+        return when (buf.getInt()) {
+            1 -> Key.EoaSigner(
+                FfiConverterTypeSigner.read(buf),
+                FfiConverterTypeRoleWeight.read(buf),
+            )
+            2 -> Key.KeyEmail(
+                FfiConverterString.read(buf),
+                FfiConverterString.read(buf),
+                FfiConverterTypeRoleWeight.read(buf),
+            )
+            3 -> Key.KeyOpenId(
+                FfiConverterString.read(buf),
+                FfiConverterTypeRoleWeight.read(buf),
+            )
+            4 -> Key.KeyOpenIdWithEmail(
+                FfiConverterString.read(buf),
+                FfiConverterString.read(buf),
+                FfiConverterString.read(buf),
+                FfiConverterTypeRoleWeight.read(buf),
+            )
+            else -> throw RuntimeException("invalid enum value, something is very wrong!!")
+        }
+    }
+
+    override fun allocationSize(value: Key) = when (value) {
+        is Key.EoaSigner -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4 +
+                    FfiConverterTypeSigner.allocationSize(value.`signer`) +
+                    FfiConverterTypeRoleWeight.allocationSize(value.`roleWeight`)
+                )
+        }
+        is Key.KeyEmail -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4 +
+                    FfiConverterString.allocationSize(value.`emailAddress`) +
+                    FfiConverterString.allocationSize(value.`pepper`) +
+                    FfiConverterTypeRoleWeight.allocationSize(value.`roleWeight`)
+                )
+        }
+        is Key.KeyOpenId -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4 +
+                    FfiConverterString.allocationSize(value.`idToken`) +
+                    FfiConverterTypeRoleWeight.allocationSize(value.`roleWeight`)
+                )
+        }
+        is Key.KeyOpenIdWithEmail -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4 +
+                    FfiConverterString.allocationSize(value.`idToken`) +
+                    FfiConverterString.allocationSize(value.`emailAddress`) +
+                    FfiConverterString.allocationSize(value.`pepper`) +
+                    FfiConverterTypeRoleWeight.allocationSize(value.`roleWeight`)
+                )
+        }
+    }
+
+    override fun write(value: Key, buf: ByteBuffer) {
+        when (value) {
+            is Key.EoaSigner -> {
+                buf.putInt(1)
+                FfiConverterTypeSigner.write(value.`signer`, buf)
+                FfiConverterTypeRoleWeight.write(value.`roleWeight`, buf)
+                Unit
+            }
+            is Key.KeyEmail -> {
+                buf.putInt(2)
+                FfiConverterString.write(value.`emailAddress`, buf)
+                FfiConverterString.write(value.`pepper`, buf)
+                FfiConverterTypeRoleWeight.write(value.`roleWeight`, buf)
+                Unit
+            }
+            is Key.KeyOpenId -> {
+                buf.putInt(3)
+                FfiConverterString.write(value.`idToken`, buf)
+                FfiConverterTypeRoleWeight.write(value.`roleWeight`, buf)
+                Unit
+            }
+            is Key.KeyOpenIdWithEmail -> {
+                buf.putInt(4)
+                FfiConverterString.write(value.`idToken`, buf)
+                FfiConverterString.write(value.`emailAddress`, buf)
+                FfiConverterString.write(value.`pepper`, buf)
+                FfiConverterTypeRoleWeight.write(value.`roleWeight`, buf)
+                Unit
+            }
+        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
+    }
+}
+
 sealed class SignerException(message: String) : Exception(message) {
     // Each variant is a nested class
     // Flat enums carries a string error message, so no special implementation is necessary.
@@ -2121,21 +2327,21 @@ public object FfiConverterTypeSmartAccountError : FfiConverterRustBuffer<SmartAc
 }
 
 sealed class Value {
-    object Null : Value()
+    object NullValue : Value()
 
-    data class Bool(
+    data class BoolValue(
         val `inner`: Boolean,
     ) : Value()
-    data class Number(
+    data class NumberValue(
         val `inner`: Double,
     ) : Value()
-    data class String(
+    data class StringValue(
         val `inner`: String,
     ) : Value()
-    data class Array(
+    data class ArrayValue(
         val `inner`: List<Value>,
     ) : Value()
-    data class Object(
+    data class ObjectValue(
         val `inner`: Map<String, Value>,
     ) : Value()
 }
@@ -2143,20 +2349,20 @@ sealed class Value {
 public object FfiConverterTypeValue : FfiConverterRustBuffer<Value> {
     override fun read(buf: ByteBuffer): Value {
         return when (buf.getInt()) {
-            1 -> Value.Null
-            2 -> Value.Bool(
+            1 -> Value.NullValue
+            2 -> Value.BoolValue(
                 FfiConverterBoolean.read(buf),
             )
-            3 -> Value.Number(
+            3 -> Value.NumberValue(
                 FfiConverterDouble.read(buf),
             )
-            4 -> Value.String(
+            4 -> Value.StringValue(
                 FfiConverterString.read(buf),
             )
-            5 -> Value.Array(
+            5 -> Value.ArrayValue(
                 FfiConverterSequenceTypeValue.read(buf),
             )
-            6 -> Value.Object(
+            6 -> Value.ObjectValue(
                 FfiConverterMapStringTypeValue.read(buf),
             )
             else -> throw RuntimeException("invalid enum value, something is very wrong!!")
@@ -2164,41 +2370,41 @@ public object FfiConverterTypeValue : FfiConverterRustBuffer<Value> {
     }
 
     override fun allocationSize(value: Value) = when (value) {
-        is Value.Null -> {
+        is Value.NullValue -> {
             // Add the size for the Int that specifies the variant plus the size needed for all fields
             (
                 4
                 )
         }
-        is Value.Bool -> {
+        is Value.BoolValue -> {
             // Add the size for the Int that specifies the variant plus the size needed for all fields
             (
                 4 +
                     FfiConverterBoolean.allocationSize(value.`inner`)
                 )
         }
-        is Value.Number -> {
+        is Value.NumberValue -> {
             // Add the size for the Int that specifies the variant plus the size needed for all fields
             (
                 4 +
                     FfiConverterDouble.allocationSize(value.`inner`)
                 )
         }
-        is Value.String -> {
+        is Value.StringValue -> {
             // Add the size for the Int that specifies the variant plus the size needed for all fields
             (
                 4 +
                     FfiConverterString.allocationSize(value.`inner`)
                 )
         }
-        is Value.Array -> {
+        is Value.ArrayValue -> {
             // Add the size for the Int that specifies the variant plus the size needed for all fields
             (
                 4 +
                     FfiConverterSequenceTypeValue.allocationSize(value.`inner`)
                 )
         }
-        is Value.Object -> {
+        is Value.ObjectValue -> {
             // Add the size for the Int that specifies the variant plus the size needed for all fields
             (
                 4 +
@@ -2209,31 +2415,31 @@ public object FfiConverterTypeValue : FfiConverterRustBuffer<Value> {
 
     override fun write(value: Value, buf: ByteBuffer) {
         when (value) {
-            is Value.Null -> {
+            is Value.NullValue -> {
                 buf.putInt(1)
                 Unit
             }
-            is Value.Bool -> {
+            is Value.BoolValue -> {
                 buf.putInt(2)
                 FfiConverterBoolean.write(value.`inner`, buf)
                 Unit
             }
-            is Value.Number -> {
+            is Value.NumberValue -> {
                 buf.putInt(3)
                 FfiConverterDouble.write(value.`inner`, buf)
                 Unit
             }
-            is Value.String -> {
+            is Value.StringValue -> {
                 buf.putInt(4)
                 FfiConverterString.write(value.`inner`, buf)
                 Unit
             }
-            is Value.Array -> {
+            is Value.ArrayValue -> {
                 buf.putInt(5)
                 FfiConverterSequenceTypeValue.write(value.`inner`, buf)
                 Unit
             }
-            is Value.Object -> {
+            is Value.ObjectValue -> {
                 buf.putInt(6)
                 FfiConverterMapStringTypeValue.write(value.`inner`, buf)
                 Unit
@@ -2772,6 +2978,28 @@ public object FfiConverterSequenceTypeTransaction : FfiConverterRustBuffer<List<
         buf.putInt(value.size)
         value.forEach {
             FfiConverterTypeTransaction.write(it, buf)
+        }
+    }
+}
+
+public object FfiConverterSequenceTypeKey : FfiConverterRustBuffer<List<Key>> {
+    override fun read(buf: ByteBuffer): List<Key> {
+        val len = buf.getInt()
+        return List<Key>(len) {
+            FfiConverterTypeKey.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<Key>): Int {
+        val sizeForLength = 4
+        val sizeForItems = value.map { FfiConverterTypeKey.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<Key>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.forEach {
+            FfiConverterTypeKey.write(it, buf)
         }
     }
 }

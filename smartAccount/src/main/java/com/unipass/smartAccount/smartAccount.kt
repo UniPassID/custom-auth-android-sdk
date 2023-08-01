@@ -14,14 +14,14 @@ import uniffi.shared.TypedData
 class SmartAccount(options: SmartAccountOptions) {
     var builder: SmartAccountBuilder?;
     var inner: SmartAccount? = null;
-    var masterKeySigner: WrapSigner;
 
     init {
-        masterKeySigner = WrapSigner(options.masterKeySigner);
         builder = SmartAccountBuilder();
-        builder!!.withAppId(options.appId);
-        builder!!.withMasterKeySigner(masterKeySigner, null);
-        builder!!.withUnipassServerUrl(options.unipassServerUrl);
+        if (options.masterKeySigner != null) {
+            val masterKeySigner = WrapSigner(options.masterKeySigner);
+            builder!!.withMasterKeySigner(masterKeySigner, null);
+        }
+        builder = builder!!.withAppId(options.appId).withUnipassServerUrl(options.unipassServerUrl);
         options.chainOptions.iterator().forEach { chainOptions ->
             builder!!.addChainOption(
                 chainOptions.chainId.iD.toULong(),
@@ -33,6 +33,16 @@ class SmartAccount(options: SmartAccountOptions) {
 
     suspend fun init(options: SmartAccountInitOptions) {
         builder!!.withActiveChain(options.chainId.iD.toULong());
+        return coroutineScope {
+            inner = builder!!.build();
+            builder!!.destroy();
+            builder = null;
+        }
+    }
+
+    suspend fun init(options: SmartAccountInitByKeysOptions) {
+        builder =
+            builder!!.withActiveChain(options.chainId.iD.toULong()).withKeys(options.keys.asList());
         return coroutineScope {
             inner = builder!!.build();
             builder!!.destroy();
