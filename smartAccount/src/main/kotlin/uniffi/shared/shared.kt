@@ -379,6 +379,7 @@ internal interface _UniFFILib : Library {
                     uniffiCheckContractApiVersion(lib)
                     uniffiCheckApiChecksums(lib)
                     FfiConverterForeignExecutor.register(lib)
+                    FfiConverterTypeEip712.register(lib)
                     FfiConverterTypeSigner.register(lib)
                 }
         }
@@ -400,6 +401,20 @@ internal interface _UniFFILib : Library {
         `ptr`: Pointer,
         _uniffi_out_err: RustCallStatus,
     ): Long
+    fun uniffi_shared_fn_method_smartaccount_is_deployed(
+        `ptr`: Pointer,
+        `uniffiExecutor`: USize,
+        `uniffiCallback`: UniFfiFutureCallbackByte,
+        `uniffiCallbackData`: USize,
+        _uniffi_out_err: RustCallStatus,
+    ): Unit
+    fun uniffi_shared_fn_method_smartaccount_nonce(
+        `ptr`: Pointer,
+        `uniffiExecutor`: USize,
+        `uniffiCallback`: UniFfiFutureCallbackLong,
+        `uniffiCallbackData`: USize,
+        _uniffi_out_err: RustCallStatus,
+    ): Unit
     fun uniffi_shared_fn_method_smartaccount_send_transactions(
         `ptr`: Pointer,
         `transactions`: RustBuffer.ByValue,
@@ -425,6 +440,14 @@ internal interface _UniFFILib : Library {
         `uniffiCallbackData`: USize,
         _uniffi_out_err: RustCallStatus,
     ): Unit
+    fun uniffi_shared_fn_method_smartaccount_sign_typed_data(
+        `ptr`: Pointer,
+        `typedData`: Long,
+        `uniffiExecutor`: USize,
+        `uniffiCallback`: UniFfiFutureCallbackRustBuffer,
+        `uniffiCallbackData`: USize,
+        _uniffi_out_err: RustCallStatus,
+    ): Unit
     fun uniffi_shared_fn_method_smartaccount_simulate_transactions(
         `ptr`: Pointer,
         `transactions`: RustBuffer.ByValue,
@@ -432,6 +455,11 @@ internal interface _UniFFILib : Library {
         `uniffiExecutor`: USize,
         `uniffiCallback`: UniFfiFutureCallbackRustBuffer,
         `uniffiCallbackData`: USize,
+        _uniffi_out_err: RustCallStatus,
+    ): Unit
+    fun uniffi_shared_fn_method_smartaccount_switch_chain(
+        `ptr`: Pointer,
+        `chainId`: Long,
         _uniffi_out_err: RustCallStatus,
     ): Unit
     fun uniffi_shared_fn_method_smartaccount_wait_for_transaction(
@@ -460,6 +488,7 @@ internal interface _UniFFILib : Library {
         `ptr`: Pointer,
         `idToken`: RustBuffer.ByValue,
         `emailAddress`: RustBuffer.ByValue,
+        `pepper`: RustBuffer.ByValue,
         `roleWeight`: RustBuffer.ByValue,
         _uniffi_out_err: RustCallStatus,
     ): Pointer
@@ -491,6 +520,10 @@ internal interface _UniFFILib : Library {
         `unipassServerUrl`: RustBuffer.ByValue,
         _uniffi_out_err: RustCallStatus,
     ): Pointer
+    fun uniffi_shared_fn_init_callback_eip712(
+        `callbackStub`: ForeignCallback,
+        _uniffi_out_err: RustCallStatus,
+    ): Unit
     fun uniffi_shared_fn_init_callback_mytrait(
         `callbackStub`: ForeignCallback,
         _uniffi_out_err: RustCallStatus,
@@ -519,10 +552,14 @@ internal interface _UniFFILib : Library {
     fun uniffi_shared_checksum_method_smartaccount_address(): Short
     fun uniffi_shared_checksum_method_smartaccount_app_id(): Short
     fun uniffi_shared_checksum_method_smartaccount_chain(): Short
+    fun uniffi_shared_checksum_method_smartaccount_is_deployed(): Short
+    fun uniffi_shared_checksum_method_smartaccount_nonce(): Short
     fun uniffi_shared_checksum_method_smartaccount_send_transactions(): Short
     fun uniffi_shared_checksum_method_smartaccount_sign_hash(): Short
     fun uniffi_shared_checksum_method_smartaccount_sign_message(): Short
+    fun uniffi_shared_checksum_method_smartaccount_sign_typed_data(): Short
     fun uniffi_shared_checksum_method_smartaccount_simulate_transactions(): Short
+    fun uniffi_shared_checksum_method_smartaccount_switch_chain(): Short
     fun uniffi_shared_checksum_method_smartaccount_wait_for_transaction(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_add_chain_option(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_add_open_id_with_email_guardian_key(): Short
@@ -532,6 +569,8 @@ internal interface _UniFFILib : Library {
     fun uniffi_shared_checksum_method_smartaccountbuilder_with_master_key_signer(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_with_unipass_server_url(): Short
     fun uniffi_shared_checksum_constructor_smartaccountbuilder_new(): Short
+    fun uniffi_shared_checksum_method_eip712_domain(): Short
+    fun uniffi_shared_checksum_method_eip712_struct_hash(): Short
     fun uniffi_shared_checksum_method_mytrait_run(): Short
     fun uniffi_shared_checksum_method_signer_address(): Short
     fun uniffi_shared_checksum_method_signer_sign_message(): Short
@@ -562,6 +601,12 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
     if (lib.uniffi_shared_checksum_method_smartaccount_chain() != 31244.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_shared_checksum_method_smartaccount_is_deployed() != 29375.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_shared_checksum_method_smartaccount_nonce() != 9274.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_shared_checksum_method_smartaccount_send_transactions() != 52880.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -571,7 +616,13 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
     if (lib.uniffi_shared_checksum_method_smartaccount_sign_message() != 55038.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_shared_checksum_method_smartaccount_sign_typed_data() != 9282.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_shared_checksum_method_smartaccount_simulate_transactions() != 1471.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_shared_checksum_method_smartaccount_switch_chain() != 38913.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_shared_checksum_method_smartaccount_wait_for_transaction() != 9892.toShort()) {
@@ -580,7 +631,7 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
     if (lib.uniffi_shared_checksum_method_smartaccountbuilder_add_chain_option() != 12444.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_shared_checksum_method_smartaccountbuilder_add_open_id_with_email_guardian_key() != 62133.toShort()) {
+    if (lib.uniffi_shared_checksum_method_smartaccountbuilder_add_open_id_with_email_guardian_key() != 57634.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_shared_checksum_method_smartaccountbuilder_build() != 58869.toShort()) {
@@ -599,6 +650,12 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_shared_checksum_constructor_smartaccountbuilder_new() != 30481.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_shared_checksum_method_eip712_domain() != 31228.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_shared_checksum_method_eip712_struct_hash() != 38152.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_shared_checksum_method_mytrait_run() != 7551.toShort()) {
@@ -908,6 +965,10 @@ public interface SmartAccountInterface {
     fun `appId`(): String
     fun `chain`():
         ULong@Throws(SmartAccountException::class)
+    suspend fun `isDeployed`():
+        Boolean@Throws(SmartAccountException::class)
+    suspend fun `nonce`():
+        ULong@Throws(SmartAccountException::class)
     suspend fun `sendTransactions`(`transactions`: List<Transaction>, `options`: SendingTransactionOptions?):
         String@Throws(SmartAccountException::class)
     suspend fun `signHash`(`hash`: List<UByte>): List<
@@ -916,8 +977,16 @@ public interface SmartAccountInterface {
     suspend fun `signMessage`(`message`: List<UByte>): List<
         UByte,
         >@Throws(SmartAccountException::class)
+    suspend fun `signTypedData`(`typedData`: Eip712): List<
+        UByte,
+        >@Throws(SmartAccountException::class)
     suspend fun `simulateTransactions`(`transactions`: List<Transaction>, `simulateOptions`: SimulateTransactionOptions?):
         SimulateResult@Throws(SmartAccountException::class)
+    fun `switchChain`(
+        `chainId`:
+
+        ULong,
+    )@Throws(SmartAccountException::class)
     suspend fun `waitForTransaction`(`txHash`: String): TransactionReceipt?
 }
 
@@ -977,6 +1046,74 @@ class SmartAccount(
         }.let {
             FfiConverterULong.lift(it)
         }
+
+    @Throws(SmartAccountException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `isDeployed`(): Boolean {
+        // Create a new `CoroutineScope` for this operation, suspend the coroutine, and call the
+        // scaffolding function, passing it one of the callback handlers from `AsyncTypes.kt`.
+        //
+        // Make sure to retain a reference to the callback handler to ensure that it's not GCed before
+        // it's invoked
+        var callbackHolder: UniFfiFutureCallbackHandlerBoolean_TypeSmartAccountError? = null
+        return coroutineScope {
+            val scope = this
+            return@coroutineScope suspendCoroutine { continuation ->
+                try {
+                    val callback = UniFfiFutureCallbackHandlerBoolean_TypeSmartAccountError(continuation)
+                    callbackHolder = callback
+                    callWithPointer { thisPtr ->
+                        rustCall { status ->
+                            _UniFFILib.INSTANCE.uniffi_shared_fn_method_smartaccount_is_deployed(
+                                thisPtr,
+
+                                FfiConverterForeignExecutor.lower(scope),
+                                callback,
+                                USize(0),
+                                status,
+                            )
+                        }
+                    }
+                } catch (e: Exception) {
+                    continuation.resumeWithException(e)
+                }
+            }
+        }
+    }
+
+    @Throws(SmartAccountException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `nonce`(): ULong {
+        // Create a new `CoroutineScope` for this operation, suspend the coroutine, and call the
+        // scaffolding function, passing it one of the callback handlers from `AsyncTypes.kt`.
+        //
+        // Make sure to retain a reference to the callback handler to ensure that it's not GCed before
+        // it's invoked
+        var callbackHolder: UniFfiFutureCallbackHandlerULong_TypeSmartAccountError? = null
+        return coroutineScope {
+            val scope = this
+            return@coroutineScope suspendCoroutine { continuation ->
+                try {
+                    val callback = UniFfiFutureCallbackHandlerULong_TypeSmartAccountError(continuation)
+                    callbackHolder = callback
+                    callWithPointer { thisPtr ->
+                        rustCall { status ->
+                            _UniFFILib.INSTANCE.uniffi_shared_fn_method_smartaccount_nonce(
+                                thisPtr,
+
+                                FfiConverterForeignExecutor.lower(scope),
+                                callback,
+                                USize(0),
+                                status,
+                            )
+                        }
+                    }
+                } catch (e: Exception) {
+                    continuation.resumeWithException(e)
+                }
+            }
+        }
+    }
 
     @Throws(SmartAccountException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
@@ -1083,6 +1220,40 @@ class SmartAccount(
 
     @Throws(SmartAccountException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `signTypedData`(`typedData`: Eip712): List<UByte> {
+        // Create a new `CoroutineScope` for this operation, suspend the coroutine, and call the
+        // scaffolding function, passing it one of the callback handlers from `AsyncTypes.kt`.
+        //
+        // Make sure to retain a reference to the callback handler to ensure that it's not GCed before
+        // it's invoked
+        var callbackHolder: UniFfiFutureCallbackHandlerSequenceUByte_TypeSmartAccountError? = null
+        return coroutineScope {
+            val scope = this
+            return@coroutineScope suspendCoroutine { continuation ->
+                try {
+                    val callback = UniFfiFutureCallbackHandlerSequenceUByte_TypeSmartAccountError(continuation)
+                    callbackHolder = callback
+                    callWithPointer { thisPtr ->
+                        rustCall { status ->
+                            _UniFFILib.INSTANCE.uniffi_shared_fn_method_smartaccount_sign_typed_data(
+                                thisPtr,
+                                FfiConverterTypeEip712.lower(`typedData`),
+                                FfiConverterForeignExecutor.lower(scope),
+                                callback,
+                                USize(0),
+                                status,
+                            )
+                        }
+                    }
+                } catch (e: Exception) {
+                    continuation.resumeWithException(e)
+                }
+            }
+        }
+    }
+
+    @Throws(SmartAccountException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun `simulateTransactions`(`transactions`: List<Transaction>, `simulateOptions`: SimulateTransactionOptions?): SimulateResult {
         // Create a new `CoroutineScope` for this operation, suspend the coroutine, and call the
         // scaffolding function, passing it one of the callback handlers from `AsyncTypes.kt`.
@@ -1115,6 +1286,20 @@ class SmartAccount(
             }
         }
     }
+
+    @Throws(
+        SmartAccountException::class,
+        )
+    override fun `switchChain`(`chainId`: ULong) =
+        callWithPointer {
+            rustCallWithError(SmartAccountException) { _status ->
+                _UniFFILib.INSTANCE.uniffi_shared_fn_method_smartaccount_switch_chain(
+                    it,
+                    FfiConverterULong.lower(`chainId`),
+                    _status,
+                )
+            }
+        }
 
     @Throws(SmartAccountException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
@@ -1177,7 +1362,7 @@ public interface SmartAccountBuilderInterface {
 
     fun `addChainOption`(`chain`: ULong, `rpcUrl`: String, `httpRelayerUrl`: String?):
         SmartAccountBuilder@Throws(SmartAccountException::class)
-    fun `addOpenIdWithEmailGuardianKey`(`idToken`: String, `emailAddress`: String, `roleWeight`: RoleWeight):
+    fun `addOpenIdWithEmailGuardianKey`(`idToken`: String, `emailAddress`: String, `pepper`: String, `roleWeight`: RoleWeight):
         SmartAccountBuilder@Throws(SmartAccountException::class)
     suspend fun `build`(): SmartAccount
     fun `withActiveChain`(`activeChain`: ULong): SmartAccountBuilder
@@ -1228,13 +1413,14 @@ class SmartAccountBuilder(
     @Throws(
         SmartAccountException::class,
         )
-    override fun `addOpenIdWithEmailGuardianKey`(`idToken`: String, `emailAddress`: String, `roleWeight`: RoleWeight): SmartAccountBuilder =
+    override fun `addOpenIdWithEmailGuardianKey`(`idToken`: String, `emailAddress`: String, `pepper`: String, `roleWeight`: RoleWeight): SmartAccountBuilder =
         callWithPointer {
             rustCallWithError(SmartAccountException) { _status ->
                 _UniFFILib.INSTANCE.uniffi_shared_fn_method_smartaccountbuilder_add_open_id_with_email_guardian_key(
                     it,
                     FfiConverterString.lower(`idToken`),
                     FfiConverterString.lower(`emailAddress`),
+                    FfiConverterString.lower(`pepper`),
                     FfiConverterTypeRoleWeight.lower(`roleWeight`),
                     _status,
                 )
@@ -1406,6 +1592,42 @@ public object FfiConverterForeignExecutor : FfiConverter<CoroutineScope, USize> 
 
     override fun write(value: CoroutineScope, buf: ByteBuffer) {
         lower(value).writeToBuffer(buf)
+    }
+}
+
+data class Eip712Domain(
+    var `name`: String?,
+    var `version`: String?,
+    var `chainId`: ULong?,
+    var `verifyingContract`: String?,
+    var `salt`: String?,
+)
+
+public object FfiConverterTypeEIP712Domain : FfiConverterRustBuffer<Eip712Domain> {
+    override fun read(buf: ByteBuffer): Eip712Domain {
+        return Eip712Domain(
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalULong.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: Eip712Domain) = (
+        FfiConverterOptionalString.allocationSize(value.`name`) +
+            FfiConverterOptionalString.allocationSize(value.`version`) +
+            FfiConverterOptionalULong.allocationSize(value.`chainId`) +
+            FfiConverterOptionalString.allocationSize(value.`verifyingContract`) +
+            FfiConverterOptionalString.allocationSize(value.`salt`)
+        )
+
+    override fun write(value: Eip712Domain, buf: ByteBuffer) {
+        FfiConverterOptionalString.write(value.`name`, buf)
+        FfiConverterOptionalString.write(value.`version`, buf)
+        FfiConverterOptionalULong.write(value.`chainId`, buf)
+        FfiConverterOptionalString.write(value.`verifyingContract`, buf)
+        FfiConverterOptionalString.write(value.`salt`, buf)
     }
 }
 
@@ -1710,6 +1932,7 @@ sealed class SignerException(message: String) : Exception(message) {
     // Flat enums carries a string error message, so no special implementation is necessary.
     class InnerSignerException(message: String) : SignerException(message)
     class UnexpectedException(message: String) : SignerException(message)
+    class Eip712Exception(message: String) : SignerException(message)
 
     companion object ErrorHandler : CallStatusErrorHandler<SignerException> {
         override fun lift(error_buf: RustBuffer.ByValue): SignerException = FfiConverterTypeSignerError.lift(error_buf)
@@ -1721,6 +1944,7 @@ public object FfiConverterTypeSignerError : FfiConverterRustBuffer<SignerExcepti
         return when (buf.getInt()) {
             1 -> SignerException.InnerSignerException(FfiConverterString.read(buf))
             2 -> SignerException.UnexpectedException(FfiConverterString.read(buf))
+            3 -> SignerException.Eip712Exception(FfiConverterString.read(buf))
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
     }
@@ -1739,6 +1963,10 @@ public object FfiConverterTypeSignerError : FfiConverterRustBuffer<SignerExcepti
                 buf.putInt(2)
                 Unit
             }
+            is SignerException.Eip712Exception -> {
+                buf.putInt(3)
+                Unit
+            }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
     }
 }
@@ -1746,6 +1974,7 @@ public object FfiConverterTypeSignerError : FfiConverterRustBuffer<SignerExcepti
 sealed class SmartAccountException(message: String) : Exception(message) {
     // Each variant is a nested class
     // Flat enums carries a string error message, so no special implementation is necessary.
+    class ParseChainException(message: String) : SmartAccountException(message)
     class CustomAuthSmartAccountException(message: String) : SmartAccountException(message)
     class SmartAccountBuilderException(message: String) : SmartAccountException(message)
     class InvalidHash(message: String) : SmartAccountException(message)
@@ -1762,13 +1991,14 @@ sealed class SmartAccountException(message: String) : Exception(message) {
 public object FfiConverterTypeSmartAccountError : FfiConverterRustBuffer<SmartAccountException> {
     override fun read(buf: ByteBuffer): SmartAccountException {
         return when (buf.getInt()) {
-            1 -> SmartAccountException.CustomAuthSmartAccountException(FfiConverterString.read(buf))
-            2 -> SmartAccountException.SmartAccountBuilderException(FfiConverterString.read(buf))
-            3 -> SmartAccountException.InvalidHash(FfiConverterString.read(buf))
-            4 -> SmartAccountException.InvalidBuilder(FfiConverterString.read(buf))
-            5 -> SmartAccountException.UnexpectedException(FfiConverterString.read(buf))
-            6 -> SmartAccountException.TypeParseException(FfiConverterString.read(buf))
-            7 -> SmartAccountException.HttpRelayerClientException(FfiConverterString.read(buf))
+            1 -> SmartAccountException.ParseChainException(FfiConverterString.read(buf))
+            2 -> SmartAccountException.CustomAuthSmartAccountException(FfiConverterString.read(buf))
+            3 -> SmartAccountException.SmartAccountBuilderException(FfiConverterString.read(buf))
+            4 -> SmartAccountException.InvalidHash(FfiConverterString.read(buf))
+            5 -> SmartAccountException.InvalidBuilder(FfiConverterString.read(buf))
+            6 -> SmartAccountException.UnexpectedException(FfiConverterString.read(buf))
+            7 -> SmartAccountException.TypeParseException(FfiConverterString.read(buf))
+            8 -> SmartAccountException.HttpRelayerClientException(FfiConverterString.read(buf))
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
     }
@@ -1779,32 +2009,36 @@ public object FfiConverterTypeSmartAccountError : FfiConverterRustBuffer<SmartAc
 
     override fun write(value: SmartAccountException, buf: ByteBuffer) {
         when (value) {
-            is SmartAccountException.CustomAuthSmartAccountException -> {
+            is SmartAccountException.ParseChainException -> {
                 buf.putInt(1)
                 Unit
             }
-            is SmartAccountException.SmartAccountBuilderException -> {
+            is SmartAccountException.CustomAuthSmartAccountException -> {
                 buf.putInt(2)
                 Unit
             }
-            is SmartAccountException.InvalidHash -> {
+            is SmartAccountException.SmartAccountBuilderException -> {
                 buf.putInt(3)
                 Unit
             }
-            is SmartAccountException.InvalidBuilder -> {
+            is SmartAccountException.InvalidHash -> {
                 buf.putInt(4)
                 Unit
             }
-            is SmartAccountException.UnexpectedException -> {
+            is SmartAccountException.InvalidBuilder -> {
                 buf.putInt(5)
                 Unit
             }
-            is SmartAccountException.TypeParseException -> {
+            is SmartAccountException.UnexpectedException -> {
                 buf.putInt(6)
                 Unit
             }
-            is SmartAccountException.HttpRelayerClientException -> {
+            is SmartAccountException.TypeParseException -> {
                 buf.putInt(7)
+                Unit
+            }
+            is SmartAccountException.HttpRelayerClientException -> {
+                buf.putInt(8)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
@@ -1888,6 +2122,108 @@ public abstract class FfiConverterCallbackInterface<CallbackInterface>(
 
     override fun write(value: CallbackInterface, buf: ByteBuffer) {
         buf.putLong(lower(value))
+    }
+}
+
+// Declaration and FfiConverters for Eip712 Callback Interface
+
+public interface Eip712 {
+    fun `domain`(): Eip712Domain
+    fun `structHash`(): String
+}
+
+// The ForeignCallback that is passed to Rust.
+internal class ForeignCallbackTypeEip712 : ForeignCallback {
+    @Suppress("TooGenericExceptionCaught")
+    override fun invoke(handle: Handle, method: Int, argsData: Pointer, argsLen: Int, outBuf: RustBufferByReference): Int {
+        val cb = FfiConverterTypeEip712.lift(handle)
+        return when (method) {
+            IDX_CALLBACK_FREE -> {
+                FfiConverterTypeEip712.drop(handle)
+                // Successful return
+                // See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`
+                UNIFFI_CALLBACK_SUCCESS
+            }
+            1 -> {
+                // Call the method, write to outBuf and return a status code
+                // See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs` for info
+                try {
+                    this.`invokeDomain`(cb, argsData, argsLen, outBuf)
+                } catch (e: Throwable) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf.setValue(FfiConverterString.lower(e.toString()))
+                    } catch (e: Throwable) {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    UNIFFI_CALLBACK_UNEXPECTED_ERROR
+                }
+            }
+            2 -> {
+                // Call the method, write to outBuf and return a status code
+                // See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs` for info
+                try {
+                    this.`invokeStructHash`(cb, argsData, argsLen, outBuf)
+                } catch (e: Throwable) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf.setValue(FfiConverterString.lower(e.toString()))
+                    } catch (e: Throwable) {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    UNIFFI_CALLBACK_UNEXPECTED_ERROR
+                }
+            }
+
+            else -> {
+                // An unexpected error happened.
+                // See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`
+                try {
+                    // Try to serialize the error into a string
+                    outBuf.setValue(FfiConverterString.lower("Invalid Callback index"))
+                } catch (e: Throwable) {
+                    // If that fails, then it's time to give up and just return
+                }
+                UNIFFI_CALLBACK_UNEXPECTED_ERROR
+            }
+        }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    private fun `invokeDomain`(kotlinCallbackInterface: Eip712, argsData: Pointer, argsLen: Int, outBuf: RustBufferByReference): Int {
+        fun makeCall(): Int {
+            val returnValue = kotlinCallbackInterface.`domain`()
+            outBuf.setValue(FfiConverterTypeEIP712Domain.lowerIntoRustBuffer(returnValue))
+            return UNIFFI_CALLBACK_SUCCESS
+        }
+        fun makeCallAndHandleError(): Int = makeCall()
+
+        return makeCallAndHandleError()
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    private fun `invokeStructHash`(kotlinCallbackInterface: Eip712, argsData: Pointer, argsLen: Int, outBuf: RustBufferByReference): Int {
+        fun makeCall(): Int {
+            val returnValue = kotlinCallbackInterface.`structHash`()
+            outBuf.setValue(FfiConverterString.lowerIntoRustBuffer(returnValue))
+            return UNIFFI_CALLBACK_SUCCESS
+        }
+        fun makeCallAndHandleError(): Int = makeCall()
+
+        return makeCallAndHandleError()
+    }
+}
+
+// The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
+public object FfiConverterTypeEip712 : FfiConverterCallbackInterface<Eip712>(
+    foreignCallback = ForeignCallbackTypeEip712(),
+) {
+    override fun register(lib: _UniFFILib) {
+        rustCall() { status ->
+            lib.uniffi_shared_fn_init_callback_eip712(this.foreignCallback, status)
+        }
     }
 }
 
@@ -2325,6 +2661,11 @@ public object FfiConverterSequenceTypeTransaction : FfiConverterRustBuffer<List<
 // Async return type handlers
 
 // FFI type for callback handlers
+internal interface UniFfiFutureCallbackByte : com.sun.jna.Callback {
+    // Note: callbackData is always 0.  We could pass Rust a pointer/usize to represent the
+    // continuation, but with JNA it's easier to just store it in the callback handler.
+    fun invoke(_callbackData: USize, returnValue: Byte?, callStatus: RustCallStatus.ByValue)
+}
 internal interface UniFfiFutureCallbackLong : com.sun.jna.Callback {
     // Note: callbackData is always 0.  We could pass Rust a pointer/usize to represent the
     // continuation, but with JNA it's easier to just store it in the callback handler.
@@ -2344,12 +2685,48 @@ internal interface UniFfiFutureCallbackRustBuffer : com.sun.jna.Callback {
 // Callback handlers for an async call.  These are invoked by Rust when the future is ready.  They
 // lift the return value or error and resume the suspended function.
 
+internal class UniFfiFutureCallbackHandlerVoid_TypeSmartAccountError(val continuation: Continuation<Unit>) :
+    UniFfiFutureCallbackByte {
+    override fun invoke(_callbackData: USize, returnValue: Byte?, callStatus: RustCallStatus.ByValue) {
+        try {
+            checkCallStatus(SmartAccountException, callStatus)
+            continuation.resume(Unit)
+        } catch (e: Throwable) {
+            continuation.resumeWithException(e)
+        }
+    }
+}
+
 internal class UniFfiFutureCallbackHandlerULong(val continuation: Continuation<ULong>) :
     UniFfiFutureCallbackLong {
     override fun invoke(_callbackData: USize, returnValue: Long?, callStatus: RustCallStatus.ByValue) {
         try {
             checkCallStatus(NullCallStatusErrorHandler, callStatus)
             continuation.resume(FfiConverterULong.lift(returnValue!!))
+        } catch (e: Throwable) {
+            continuation.resumeWithException(e)
+        }
+    }
+}
+
+internal class UniFfiFutureCallbackHandlerULong_TypeSmartAccountError(val continuation: Continuation<ULong>) :
+    UniFfiFutureCallbackLong {
+    override fun invoke(_callbackData: USize, returnValue: Long?, callStatus: RustCallStatus.ByValue) {
+        try {
+            checkCallStatus(SmartAccountException, callStatus)
+            continuation.resume(FfiConverterULong.lift(returnValue!!))
+        } catch (e: Throwable) {
+            continuation.resumeWithException(e)
+        }
+    }
+}
+
+internal class UniFfiFutureCallbackHandlerBoolean_TypeSmartAccountError(val continuation: Continuation<Boolean>) :
+    UniFfiFutureCallbackByte {
+    override fun invoke(_callbackData: USize, returnValue: Byte?, callStatus: RustCallStatus.ByValue) {
+        try {
+            checkCallStatus(SmartAccountException, callStatus)
+            continuation.resume(FfiConverterBoolean.lift(returnValue!!))
         } catch (e: Throwable) {
             continuation.resumeWithException(e)
         }

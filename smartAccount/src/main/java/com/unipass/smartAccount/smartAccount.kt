@@ -3,6 +3,7 @@ package com.unipass.smartAccount
 import kotlin.jvm.JvmOverloads
 import kotlinx.coroutines.coroutineScope
 import org.web3j.utils.Numeric
+import uniffi.shared.Eip712
 import uniffi.shared.SendingTransactionOptions
 import uniffi.shared.SimulateTransactionOptions
 import uniffi.shared.SmartAccount
@@ -40,18 +41,37 @@ class SmartAccount(options: SmartAccountOptions) {
     }
 
     /*********************** Account Status Functions  */
-    val address: String?
-        get() = Numeric.toHexString(inner?.address()?.toUByteArray()?.toByteArray())
+    fun address(): String {
+        this.requireInit()
+        return Numeric.toHexString(inner!!.address().toUByteArray().toByteArray())
+    }
 
     //        throw new Exception("not implemented");
-    val isDeployed: Boolean
-        get() = false
-    val chainId: ChainID
-        get() = ChainID.ETHEREUM_MAINNET
-    val nonce: Int
-        get() = 1
+    suspend fun isDeployed(): Boolean {
+        this.requireInit()
+        return this.inner!!.isDeployed();
+    }
 
-    fun switchChain(chainID: ChainID?) {}
+    private fun requireInit() {
+        if (inner == null) {
+            throw SmartAccountNotInitException();
+        }
+    }
+
+    fun chainId(): ChainID {
+        requireInit();
+        return ChainID.from(this.inner!!.chain().toInt());
+    }
+
+    suspend fun nonce(): ULong {
+        requireInit()
+        return this.inner!!.nonce()
+    }
+
+    fun switchChain(chainID: ChainID) {
+        requireInit()
+        this.inner!!.switchChain(chainID.iD.toULong())
+    }
 
     /*********************** Message Sign Functions  */
     suspend fun signMessage(message: String): String? {
@@ -72,9 +92,11 @@ class SmartAccount(options: SmartAccountOptions) {
         }
     }
 
-    // TODO:
-    fun signTypedData(): String? {
-        return null
+    suspend fun signTypedData(typedData: Eip712): String {
+        this.requireInit()
+        return Numeric.toHexString(
+            this.inner!!.signTypedData(typedData).toUByteArray().toByteArray()
+        )
     }
 
     /*********************** Transaction Functions  */

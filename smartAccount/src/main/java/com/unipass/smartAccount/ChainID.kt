@@ -6,4 +6,7 @@ enum class ChainID(val iD: Int) {
     ),
     POLYGON_MUMBAI(80001), ARBITRIUM_ONE(42161), ARBITRUM_GOERLI(421613);
 
+    companion object {
+        fun from(findID: Int): ChainID = ChainID.values().first { it.iD == findID }
+    }
 }
