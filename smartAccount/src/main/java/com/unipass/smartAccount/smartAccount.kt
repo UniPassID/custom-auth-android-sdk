@@ -3,13 +3,13 @@ package com.unipass.smartAccount
 import kotlin.jvm.JvmOverloads
 import kotlinx.coroutines.coroutineScope
 import org.web3j.utils.Numeric
-import uniffi.shared.Eip712
 import uniffi.shared.SendingTransactionOptions
 import uniffi.shared.SimulateTransactionOptions
 import uniffi.shared.SmartAccount
 import uniffi.shared.SmartAccountBuilder
 import uniffi.shared.Transaction
 import uniffi.shared.SimulateResult
+import uniffi.shared.TypedData
 
 class SmartAccount(options: SmartAccountOptions) {
     var builder: SmartAccountBuilder?;
@@ -92,7 +92,7 @@ class SmartAccount(options: SmartAccountOptions) {
         }
     }
 
-    suspend fun signTypedData(typedData: Eip712): String {
+    suspend fun signTypedData(typedData: TypedData): String {
         this.requireInit()
         return Numeric.toHexString(
             this.inner!!.signTypedData(typedData).toUByteArray().toByteArray()
