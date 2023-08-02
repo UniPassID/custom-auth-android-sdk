@@ -2,9 +2,9 @@ package com.unipass.smartAccount
 
 import uniffi.shared.RoleWeight
 
-class SmartAccountOptions(
-    val masterKeySigner: Signer?,
-    val masterKeyRoleWeight: RoleWeight?,
+data class SmartAccountOptions(
+    val masterKeySigner: Signer? = null,
+    val masterKeyRoleWeight: RoleWeight? = null,
     val appId: String,
     val unipassServerUrl: String,
     val chainOptions: Array<ChainOptions>
