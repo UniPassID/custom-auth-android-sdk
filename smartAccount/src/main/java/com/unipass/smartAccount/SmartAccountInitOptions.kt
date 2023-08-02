@@ -8,6 +8,11 @@ class SmartAccountInitOptions(
 )
 
 class SmartAccountInitByKeysOptions(
-    val chainId:ChainID,
-    val keys:Array<Key>
+    val chainId: ChainID,
+    val keys: Array<Key>
+)
+
+class SmartAccountInitByKeysetJsonOptions(
+    val chainId: ChainID,
+    val keysetJson: String
 )

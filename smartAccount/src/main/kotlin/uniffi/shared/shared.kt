@@ -407,6 +407,10 @@ internal interface _UniFFILib : Library {
         `uniffiCallbackData`: USize,
         _uniffi_out_err: RustCallStatus,
     ): Unit
+    fun uniffi_shared_fn_method_smartaccount_keyset_json(
+        `ptr`: Pointer,
+        _uniffi_out_err: RustCallStatus,
+    ): RustBuffer.ByValue
     fun uniffi_shared_fn_method_smartaccount_nonce(
         `ptr`: Pointer,
         `uniffiExecutor`: USize,
@@ -525,6 +529,11 @@ internal interface _UniFFILib : Library {
         `keys`: RustBuffer.ByValue,
         _uniffi_out_err: RustCallStatus,
     ): Pointer
+    fun uniffi_shared_fn_method_smartaccountbuilder_with_keyset_json(
+        `ptr`: Pointer,
+        `keysetJson`: RustBuffer.ByValue,
+        _uniffi_out_err: RustCallStatus,
+    ): Pointer
     fun uniffi_shared_fn_method_smartaccountbuilder_with_master_key_signer(
         `ptr`: Pointer,
         `signer`: Long,
@@ -565,6 +574,7 @@ internal interface _UniFFILib : Library {
     fun uniffi_shared_checksum_method_smartaccount_app_id(): Short
     fun uniffi_shared_checksum_method_smartaccount_chain(): Short
     fun uniffi_shared_checksum_method_smartaccount_is_deployed(): Short
+    fun uniffi_shared_checksum_method_smartaccount_keyset_json(): Short
     fun uniffi_shared_checksum_method_smartaccount_nonce(): Short
     fun uniffi_shared_checksum_method_smartaccount_send_transactions(): Short
     fun uniffi_shared_checksum_method_smartaccount_sign_hash(): Short
@@ -581,6 +591,7 @@ internal interface _UniFFILib : Library {
     fun uniffi_shared_checksum_method_smartaccountbuilder_with_active_chain(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_with_app_id(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_with_keys(): Short
+    fun uniffi_shared_checksum_method_smartaccountbuilder_with_keyset_json(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_with_master_key_signer(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_with_unipass_server_url(): Short
     fun uniffi_shared_checksum_constructor_smartaccountbuilder_new(): Short
@@ -615,6 +626,9 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_shared_checksum_method_smartaccount_is_deployed() != 29375.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_shared_checksum_method_smartaccount_keyset_json() != 42583.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_shared_checksum_method_smartaccount_nonce() != 9274.toShort()) {
@@ -663,6 +677,9 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_shared_checksum_method_smartaccountbuilder_with_keys() != 8540.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_shared_checksum_method_smartaccountbuilder_with_keyset_json() != 31804.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_shared_checksum_method_smartaccountbuilder_with_master_key_signer() != 43948.toShort()) {
@@ -1001,8 +1018,9 @@ public interface SmartAccountInterface {
     fun `appId`(): String
     fun `chain`():
         ULong@Throws(SmartAccountException::class)
-    suspend fun `isDeployed`():
-        Boolean@Throws(SmartAccountException::class)
+    suspend fun `isDeployed`(): Boolean
+    fun `keysetJson`():
+        String@Throws(SmartAccountException::class)
     suspend fun `nonce`():
         ULong@Throws(SmartAccountException::class)
     suspend fun `sendTransactions`(`transactions`: List<Transaction>, `options`: SendingTransactionOptions?):
@@ -1116,6 +1134,18 @@ class SmartAccount(
             }
         }
     }
+    override fun `keysetJson`(): String =
+        callWithPointer {
+            rustCall() { _status ->
+                _UniFFILib.INSTANCE.uniffi_shared_fn_method_smartaccount_keyset_json(
+                    it,
+
+                    _status,
+                )
+            }
+        }.let {
+            FfiConverterString.lift(it)
+        }
 
     @Throws(SmartAccountException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
@@ -1408,7 +1438,9 @@ public interface SmartAccountBuilderInterface {
     fun `withActiveChain`(`activeChain`: ULong): SmartAccountBuilder
     fun `withAppId`(`appId`: String):
         SmartAccountBuilder@Throws(SmartAccountException::class)
-    fun `withKeys`(`keys`: List<Key>): SmartAccountBuilder
+    fun `withKeys`(`keys`: List<Key>):
+        SmartAccountBuilder@Throws(SmartAccountException::class)
+    fun `withKeysetJson`(`keysetJson`: String): SmartAccountBuilder
     fun `withMasterKeySigner`(`signer`: Signer, `roleWeight`: RoleWeight?): SmartAccountBuilder
     fun `withUnipassServerUrl`(`unipassServerUrl`: String): SmartAccountBuilder
 }
@@ -1573,6 +1605,22 @@ class SmartAccountBuilder(
                 _UniFFILib.INSTANCE.uniffi_shared_fn_method_smartaccountbuilder_with_keys(
                     it,
                     FfiConverterSequenceTypeKey.lower(`keys`),
+                    _status,
+                )
+            }
+        }.let {
+            FfiConverterTypeSmartAccountBuilder.lift(it)
+        }
+
+    @Throws(
+        SmartAccountException::class,
+        )
+    override fun `withKeysetJson`(`keysetJson`: String): SmartAccountBuilder =
+        callWithPointer {
+            rustCallWithError(SmartAccountException) { _status ->
+                _UniFFILib.INSTANCE.uniffi_shared_fn_method_smartaccountbuilder_with_keyset_json(
+                    it,
+                    FfiConverterString.lower(`keysetJson`),
                     _status,
                 )
             }
@@ -2193,6 +2241,8 @@ sealed class SignerException(message: String) : Exception(message) {
     class UnexpectedException(message: String) : SignerException(message)
     class Eip712Exception(message: String) : SignerException(message)
     class EthersEip712Exception(message: String) : SignerException(message)
+    class OpenIdWithEmailException(message: String) : SignerException(message)
+    class NotSupportSign(message: String) : SignerException(message)
 
     companion object ErrorHandler : CallStatusErrorHandler<SignerException> {
         override fun lift(error_buf: RustBuffer.ByValue): SignerException = FfiConverterTypeSignerError.lift(error_buf)
@@ -2206,6 +2256,8 @@ public object FfiConverterTypeSignerError : FfiConverterRustBuffer<SignerExcepti
             2 -> SignerException.UnexpectedException(FfiConverterString.read(buf))
             3 -> SignerException.Eip712Exception(FfiConverterString.read(buf))
             4 -> SignerException.EthersEip712Exception(FfiConverterString.read(buf))
+            5 -> SignerException.OpenIdWithEmailException(FfiConverterString.read(buf))
+            6 -> SignerException.NotSupportSign(FfiConverterString.read(buf))
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
     }
@@ -2230,6 +2282,14 @@ public object FfiConverterTypeSignerError : FfiConverterRustBuffer<SignerExcepti
             }
             is SignerException.EthersEip712Exception -> {
                 buf.putInt(4)
+                Unit
+            }
+            is SignerException.OpenIdWithEmailException -> {
+                buf.putInt(5)
+                Unit
+            }
+            is SignerException.NotSupportSign -> {
+                buf.putInt(6)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }

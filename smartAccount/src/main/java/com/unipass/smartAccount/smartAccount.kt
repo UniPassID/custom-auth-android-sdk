@@ -3,6 +3,7 @@ package com.unipass.smartAccount
 import kotlin.jvm.JvmOverloads
 import kotlinx.coroutines.coroutineScope
 import org.web3j.utils.Numeric
+import uniffi.shared.RoleWeight
 import uniffi.shared.SendingTransactionOptions
 import uniffi.shared.SimulateTransactionOptions
 import uniffi.shared.SmartAccount
@@ -14,12 +15,15 @@ import uniffi.shared.TypedData
 class SmartAccount(options: SmartAccountOptions) {
     var builder: SmartAccountBuilder?;
     var inner: SmartAccount? = null;
+    var masterKeySigner: WrapSigner? = null;
+    var masterKeyRoleWeight: RoleWeight? = null;
 
     init {
         builder = SmartAccountBuilder();
         if (options.masterKeySigner != null) {
-            val masterKeySigner = WrapSigner(options.masterKeySigner);
-            builder!!.withMasterKeySigner(masterKeySigner, null);
+            masterKeySigner = WrapSigner(options.masterKeySigner);
+            masterKeyRoleWeight = options.masterKeyRoleWeight;
+            builder!!.withMasterKeySigner(masterKeySigner!!, masterKeyRoleWeight);
         }
         builder = builder!!.withAppId(options.appId).withUnipassServerUrl(options.unipassServerUrl);
         options.chainOptions.iterator().forEach { chainOptions ->
@@ -40,9 +44,42 @@ class SmartAccount(options: SmartAccountOptions) {
         }
     }
 
+    /**
+     * Init initialize by keys
+     * Notice that the first key is the master key. If you pass master key in the
+     * constructor function, the master key will replace the master key in the
+     * keys in options.
+     *
+     * @param options
+     */
     suspend fun init(options: SmartAccountInitByKeysOptions) {
         builder =
             builder!!.withActiveChain(options.chainId.iD.toULong()).withKeys(options.keys.asList());
+        if (masterKeySigner != null) {
+            builder = builder!!.withMasterKeySigner(masterKeySigner!!, masterKeyRoleWeight);
+        }
+        return coroutineScope {
+            inner = builder!!.build();
+            builder!!.destroy();
+            builder = null;
+        }
+    }
+
+    /**
+     * Init initialize by keyset json string.
+     * Notice that the first key is the master key. If you pass master key in the
+     * constructor function, the master key will replace the master key in the
+     * keyset json in options.
+     *
+     * @param options
+     */
+    suspend fun init(options: SmartAccountInitByKeysetJsonOptions) {
+        builder =
+            builder!!.withActiveChain(options.chainId.iD.toULong())
+                .withKeysetJson(options.keysetJson);
+        if (masterKeySigner != null) {
+            builder = builder!!.withMasterKeySigner(masterKeySigner!!, masterKeyRoleWeight);
+        }
         return coroutineScope {
             inner = builder!!.build();
             builder!!.destroy();
@@ -51,12 +88,23 @@ class SmartAccount(options: SmartAccountOptions) {
     }
 
     /*********************** Account Status Functions  */
+    /**
+     * Address
+     *
+     * @return the contract address of the smart account.
+     *          return `0x` prefixed hex string.
+     */
     fun address(): String {
         this.requireInit()
         return Numeric.toHexString(inner!!.address().toUByteArray().toByteArray())
     }
 
     //        throw new Exception("not implemented");
+    /**
+     * Is deployed
+     *
+     * @return whether the smart account contract is deployed
+     */
     suspend fun isDeployed(): Boolean {
         this.requireInit()
         return this.inner!!.isDeployed();
@@ -68,6 +116,11 @@ class SmartAccount(options: SmartAccountOptions) {
         }
     }
 
+    /**
+     * Chain id of the current active chain.
+     *
+     * @return
+     */
     fun chainId(): ChainID {
         requireInit();
         return ChainID.from(this.inner!!.chain().toInt());
@@ -78,6 +131,13 @@ class SmartAccount(options: SmartAccountOptions) {
         return this.inner!!.nonce()
     }
 
+    /**
+     * Switch chain
+     * Notice that the chain has to be included in the chain options
+     * from the constructor.
+     *
+     * @param chainID
+     */
     fun switchChain(chainID: ChainID) {
         requireInit()
         this.inner!!.switchChain(chainID.iD.toULong())
@@ -162,5 +222,10 @@ class SmartAccount(options: SmartAccountOptions) {
         timeOut: Int
     ): uniffi.shared.TransactionReceipt? {
         return inner?.waitForTransaction(transactionHash);
+    }
+
+    fun getKeysetJson(): String {
+        requireInit()
+        return inner!!.keysetJson();
     }
 }
