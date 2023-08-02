@@ -500,7 +500,6 @@ internal interface _UniFFILib : Library {
         `ptr`: Pointer,
         `idToken`: RustBuffer.ByValue,
         `emailAddress`: RustBuffer.ByValue,
-        `pepper`: RustBuffer.ByValue,
         `roleWeight`: RustBuffer.ByValue,
         _uniffi_out_err: RustCallStatus,
     ): Pointer
@@ -651,7 +650,7 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
     if (lib.uniffi_shared_checksum_method_smartaccountbuilder_add_open_id_guardian_key() != 44109.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_shared_checksum_method_smartaccountbuilder_add_open_id_with_email_guardian_key() != 57634.toShort()) {
+    if (lib.uniffi_shared_checksum_method_smartaccountbuilder_add_open_id_with_email_guardian_key() != 62133.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_shared_checksum_method_smartaccountbuilder_build() != 58869.toShort()) {
@@ -1403,7 +1402,7 @@ public interface SmartAccountBuilderInterface {
         SmartAccountBuilder@Throws(SmartAccountException::class)
     fun `addOpenIdGuardianKey`(`idToken`: String, `roleWeight`: RoleWeight):
         SmartAccountBuilder@Throws(SmartAccountException::class)
-    fun `addOpenIdWithEmailGuardianKey`(`idToken`: String, `emailAddress`: String, `pepper`: String, `roleWeight`: RoleWeight):
+    fun `addOpenIdWithEmailGuardianKey`(`idToken`: String, `emailAddress`: String, `roleWeight`: RoleWeight):
         SmartAccountBuilder@Throws(SmartAccountException::class)
     suspend fun `build`(): SmartAccount
     fun `withActiveChain`(`activeChain`: ULong): SmartAccountBuilder
@@ -1491,14 +1490,13 @@ class SmartAccountBuilder(
     @Throws(
         SmartAccountException::class,
         )
-    override fun `addOpenIdWithEmailGuardianKey`(`idToken`: String, `emailAddress`: String, `pepper`: String, `roleWeight`: RoleWeight): SmartAccountBuilder =
+    override fun `addOpenIdWithEmailGuardianKey`(`idToken`: String, `emailAddress`: String, `roleWeight`: RoleWeight): SmartAccountBuilder =
         callWithPointer {
             rustCallWithError(SmartAccountException) { _status ->
                 _UniFFILib.INSTANCE.uniffi_shared_fn_method_smartaccountbuilder_add_open_id_with_email_guardian_key(
                     it,
                     FfiConverterString.lower(`idToken`),
                     FfiConverterString.lower(`emailAddress`),
-                    FfiConverterString.lower(`pepper`),
                     FfiConverterTypeRoleWeight.lower(`roleWeight`),
                     _status,
                 )
@@ -2084,7 +2082,6 @@ sealed class Key {
     ) : Key()
     data class KeyEmail(
         val `emailAddress`: String,
-        val `pepper`: String,
         val `roleWeight`: RoleWeight,
     ) : Key()
     data class KeyOpenId(
@@ -2094,7 +2091,6 @@ sealed class Key {
     data class KeyOpenIdWithEmail(
         val `idToken`: String,
         val `emailAddress`: String,
-        val `pepper`: String,
         val `roleWeight`: RoleWeight,
     ) : Key()
 }
@@ -2108,7 +2104,6 @@ public object FfiConverterTypeKey : FfiConverterRustBuffer<Key> {
             )
             2 -> Key.KeyEmail(
                 FfiConverterString.read(buf),
-                FfiConverterString.read(buf),
                 FfiConverterTypeRoleWeight.read(buf),
             )
             3 -> Key.KeyOpenId(
@@ -2116,7 +2111,6 @@ public object FfiConverterTypeKey : FfiConverterRustBuffer<Key> {
                 FfiConverterTypeRoleWeight.read(buf),
             )
             4 -> Key.KeyOpenIdWithEmail(
-                FfiConverterString.read(buf),
                 FfiConverterString.read(buf),
                 FfiConverterString.read(buf),
                 FfiConverterTypeRoleWeight.read(buf),
@@ -2139,7 +2133,6 @@ public object FfiConverterTypeKey : FfiConverterRustBuffer<Key> {
             (
                 4 +
                     FfiConverterString.allocationSize(value.`emailAddress`) +
-                    FfiConverterString.allocationSize(value.`pepper`) +
                     FfiConverterTypeRoleWeight.allocationSize(value.`roleWeight`)
                 )
         }
@@ -2157,7 +2150,6 @@ public object FfiConverterTypeKey : FfiConverterRustBuffer<Key> {
                 4 +
                     FfiConverterString.allocationSize(value.`idToken`) +
                     FfiConverterString.allocationSize(value.`emailAddress`) +
-                    FfiConverterString.allocationSize(value.`pepper`) +
                     FfiConverterTypeRoleWeight.allocationSize(value.`roleWeight`)
                 )
         }
@@ -2174,7 +2166,6 @@ public object FfiConverterTypeKey : FfiConverterRustBuffer<Key> {
             is Key.KeyEmail -> {
                 buf.putInt(2)
                 FfiConverterString.write(value.`emailAddress`, buf)
-                FfiConverterString.write(value.`pepper`, buf)
                 FfiConverterTypeRoleWeight.write(value.`roleWeight`, buf)
                 Unit
             }
@@ -2188,7 +2179,6 @@ public object FfiConverterTypeKey : FfiConverterRustBuffer<Key> {
                 buf.putInt(4)
                 FfiConverterString.write(value.`idToken`, buf)
                 FfiConverterString.write(value.`emailAddress`, buf)
-                FfiConverterString.write(value.`pepper`, buf)
                 FfiConverterTypeRoleWeight.write(value.`roleWeight`, buf)
                 Unit
             }
