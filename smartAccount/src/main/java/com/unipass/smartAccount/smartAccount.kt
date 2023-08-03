@@ -46,18 +46,17 @@ class SmartAccount(options: SmartAccountOptions) {
 
     /**
      * Init initialize by keys
-     * Notice that the first key is the master key. If you pass master key in the
-     * constructor function, the master key will replace the master key in the
-     * keys in options.
      *
      * @param options
      */
     suspend fun init(options: SmartAccountInitByKeysOptions) {
-        builder =
-            builder!!.withActiveChain(options.chainId.iD.toULong()).withKeys(options.keys.asList());
-        if (masterKeySigner != null) {
-            builder = builder!!.withMasterKeySigner(masterKeySigner!!, masterKeyRoleWeight);
-        }
+        var keys = options.keys.toMutableList()
+        builder = if (masterKeySigner != null) {
+            builder!!.withMasterKeySigner(masterKeySigner!!, masterKeyRoleWeight)
+        } else {
+            val masterKey = keys.removeFirst()
+            builder!!.withMasterKey(masterKey)
+        }.addGuardianKeys(keys).withActiveChain(options.chainId.iD.toULong())
         return coroutineScope {
             inner = builder!!.build();
             builder!!.destroy();

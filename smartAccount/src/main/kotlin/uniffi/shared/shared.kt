@@ -494,6 +494,11 @@ internal interface _UniFFILib : Library {
         `roleWeight`: RustBuffer.ByValue,
         _uniffi_out_err: RustCallStatus,
     ): Pointer
+    fun uniffi_shared_fn_method_smartaccountbuilder_add_guardian_keys(
+        `ptr`: Pointer,
+        `keys`: RustBuffer.ByValue,
+        _uniffi_out_err: RustCallStatus,
+    ): Pointer
     fun uniffi_shared_fn_method_smartaccountbuilder_add_open_id_guardian_key(
         `ptr`: Pointer,
         `idToken`: RustBuffer.ByValue,
@@ -524,14 +529,14 @@ internal interface _UniFFILib : Library {
         `appId`: RustBuffer.ByValue,
         _uniffi_out_err: RustCallStatus,
     ): Pointer
-    fun uniffi_shared_fn_method_smartaccountbuilder_with_keys(
-        `ptr`: Pointer,
-        `keys`: RustBuffer.ByValue,
-        _uniffi_out_err: RustCallStatus,
-    ): Pointer
     fun uniffi_shared_fn_method_smartaccountbuilder_with_keyset_json(
         `ptr`: Pointer,
         `keysetJson`: RustBuffer.ByValue,
+        _uniffi_out_err: RustCallStatus,
+    ): Pointer
+    fun uniffi_shared_fn_method_smartaccountbuilder_with_master_key(
+        `ptr`: Pointer,
+        `key`: RustBuffer.ByValue,
         _uniffi_out_err: RustCallStatus,
     ): Pointer
     fun uniffi_shared_fn_method_smartaccountbuilder_with_master_key_signer(
@@ -585,13 +590,14 @@ internal interface _UniFFILib : Library {
     fun uniffi_shared_checksum_method_smartaccount_wait_for_transaction(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_add_chain_option(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_add_email_guardian_key(): Short
+    fun uniffi_shared_checksum_method_smartaccountbuilder_add_guardian_keys(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_add_open_id_guardian_key(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_add_open_id_with_email_guardian_key(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_build(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_with_active_chain(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_with_app_id(): Short
-    fun uniffi_shared_checksum_method_smartaccountbuilder_with_keys(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_with_keyset_json(): Short
+    fun uniffi_shared_checksum_method_smartaccountbuilder_with_master_key(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_with_master_key_signer(): Short
     fun uniffi_shared_checksum_method_smartaccountbuilder_with_unipass_server_url(): Short
     fun uniffi_shared_checksum_constructor_smartaccountbuilder_new(): Short
@@ -661,6 +667,9 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
     if (lib.uniffi_shared_checksum_method_smartaccountbuilder_add_email_guardian_key() != 49619.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_shared_checksum_method_smartaccountbuilder_add_guardian_keys() != 63158.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_shared_checksum_method_smartaccountbuilder_add_open_id_guardian_key() != 44109.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -676,10 +685,10 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
     if (lib.uniffi_shared_checksum_method_smartaccountbuilder_with_app_id() != 14169.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_shared_checksum_method_smartaccountbuilder_with_keys() != 8540.toShort()) {
+    if (lib.uniffi_shared_checksum_method_smartaccountbuilder_with_keyset_json() != 31804.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_shared_checksum_method_smartaccountbuilder_with_keyset_json() != 31804.toShort()) {
+    if (lib.uniffi_shared_checksum_method_smartaccountbuilder_with_master_key() != 50082.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_shared_checksum_method_smartaccountbuilder_with_master_key_signer() != 43948.toShort()) {
@@ -1430,6 +1439,8 @@ public interface SmartAccountBuilderInterface {
         SmartAccountBuilder@Throws(SmartAccountException::class)
     fun `addEmailGuardianKey`(`emailAddress`: String, `pepper`: String, `roleWeight`: RoleWeight):
         SmartAccountBuilder@Throws(SmartAccountException::class)
+    fun `addGuardianKeys`(`keys`: List<Key>):
+        SmartAccountBuilder@Throws(SmartAccountException::class)
     fun `addOpenIdGuardianKey`(`idToken`: String, `roleWeight`: RoleWeight):
         SmartAccountBuilder@Throws(SmartAccountException::class)
     fun `addOpenIdWithEmailGuardianKey`(`idToken`: String, `emailAddress`: String, `roleWeight`: RoleWeight):
@@ -1438,9 +1449,9 @@ public interface SmartAccountBuilderInterface {
     fun `withActiveChain`(`activeChain`: ULong): SmartAccountBuilder
     fun `withAppId`(`appId`: String):
         SmartAccountBuilder@Throws(SmartAccountException::class)
-    fun `withKeys`(`keys`: List<Key>):
+    fun `withKeysetJson`(`keysetJson`: String):
         SmartAccountBuilder@Throws(SmartAccountException::class)
-    fun `withKeysetJson`(`keysetJson`: String): SmartAccountBuilder
+    fun `withMasterKey`(`key`: Key): SmartAccountBuilder
     fun `withMasterKeySigner`(`signer`: Signer, `roleWeight`: RoleWeight?): SmartAccountBuilder
     fun `withUnipassServerUrl`(`unipassServerUrl`: String): SmartAccountBuilder
 }
@@ -1495,6 +1506,22 @@ class SmartAccountBuilder(
                     FfiConverterString.lower(`emailAddress`),
                     FfiConverterString.lower(`pepper`),
                     FfiConverterTypeRoleWeight.lower(`roleWeight`),
+                    _status,
+                )
+            }
+        }.let {
+            FfiConverterTypeSmartAccountBuilder.lift(it)
+        }
+
+    @Throws(
+        SmartAccountException::class,
+        )
+    override fun `addGuardianKeys`(`keys`: List<Key>): SmartAccountBuilder =
+        callWithPointer {
+            rustCallWithError(SmartAccountException) { _status ->
+                _UniFFILib.INSTANCE.uniffi_shared_fn_method_smartaccountbuilder_add_guardian_keys(
+                    it,
+                    FfiConverterSequenceTypeKey.lower(`keys`),
                     _status,
                 )
             }
@@ -1599,12 +1626,12 @@ class SmartAccountBuilder(
     @Throws(
         SmartAccountException::class,
         )
-    override fun `withKeys`(`keys`: List<Key>): SmartAccountBuilder =
+    override fun `withKeysetJson`(`keysetJson`: String): SmartAccountBuilder =
         callWithPointer {
             rustCallWithError(SmartAccountException) { _status ->
-                _UniFFILib.INSTANCE.uniffi_shared_fn_method_smartaccountbuilder_with_keys(
+                _UniFFILib.INSTANCE.uniffi_shared_fn_method_smartaccountbuilder_with_keyset_json(
                     it,
-                    FfiConverterSequenceTypeKey.lower(`keys`),
+                    FfiConverterString.lower(`keysetJson`),
                     _status,
                 )
             }
@@ -1615,12 +1642,12 @@ class SmartAccountBuilder(
     @Throws(
         SmartAccountException::class,
         )
-    override fun `withKeysetJson`(`keysetJson`: String): SmartAccountBuilder =
+    override fun `withMasterKey`(`key`: Key): SmartAccountBuilder =
         callWithPointer {
             rustCallWithError(SmartAccountException) { _status ->
-                _UniFFILib.INSTANCE.uniffi_shared_fn_method_smartaccountbuilder_with_keyset_json(
+                _UniFFILib.INSTANCE.uniffi_shared_fn_method_smartaccountbuilder_with_master_key(
                     it,
-                    FfiConverterString.lower(`keysetJson`),
+                    FfiConverterTypeKey.lower(`key`),
                     _status,
                 )
             }
