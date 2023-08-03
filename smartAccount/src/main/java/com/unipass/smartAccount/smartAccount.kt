@@ -26,9 +26,9 @@ class SmartAccount(options: SmartAccountOptions) {
             builder!!.withMasterKeySigner(masterKeySigner!!, masterKeyRoleWeight);
         }
         if (options.unipassServerUrl != null) {
-            builder = builder!!.withUnipassServerUrl(options.unipassServerUrl)
+            builder!!.withUnipassServerUrl(options.unipassServerUrl)
         }
-        builder = builder!!.withAppId(options.appId);
+        builder!!.withAppId(options.appId);
         options.chainOptions.iterator().forEach { chainOptions ->
             builder!!.addChainOption(
                 chainOptions.chainId.iD.toULong(),
@@ -54,12 +54,13 @@ class SmartAccount(options: SmartAccountOptions) {
      */
     suspend fun init(options: SmartAccountInitByKeysOptions) {
         var keys = options.keys.toMutableList()
-        builder = if (masterKeySigner != null) {
-            builder!!.withMasterKeySigner(masterKeySigner!!, masterKeyRoleWeight)
+        if (masterKeySigner != null) {
+            builder = builder!!.withMasterKeySigner(masterKeySigner!!, masterKeyRoleWeight)
         } else {
             val masterKey = keys.removeFirst()
-            builder!!.withMasterKey(masterKey)
-        }.addGuardianKeys(keys.toList()).withActiveChain(options.chainId.iD.toULong())
+            builder = builder!!.withMasterKey(masterKey)
+        }
+        builder!!.addGuardianKeys(keys.toList()).withActiveChain(options.chainId.iD.toULong())
         return coroutineScope {
             inner = builder!!.build();
             builder!!.destroy();
