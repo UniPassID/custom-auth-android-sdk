@@ -54,9 +54,7 @@ class SmartAccount(options: SmartAccountOptions) {
      */
     suspend fun init(options: SmartAccountInitByKeysOptions) {
         var keys = options.keys.toMutableList()
-        if (masterKeySigner != null) {
-            builder = builder!!.withMasterKeySigner(masterKeySigner!!, masterKeyRoleWeight)
-        } else {
+        if masterKeySigner == null {
             val masterKey = keys.removeFirst()
             builder = builder!!.withMasterKey(masterKey)
         }
